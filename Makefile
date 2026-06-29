@@ -8,12 +8,12 @@ SIZE    = arm-none-eabi-size
 ######################################
 # Project Files
 ######################################
-TARGET = main
+TARGET = My_Project
 OUTDIR = build
 
 # Source Files
-SRCS = main.c \
-       startup_n32g031_gcc.s \
+SRCS = src/main.c \
+       startup/startup_n32g031_gcc.s \
        system_n32g031.c \
        n32g031_rcc.c \
        n32g031_usart.c \
@@ -21,7 +21,7 @@ SRCS = main.c \
        n32g031_adc.c
 
 # Include Paths (Update these to match your folder structure)
-INCLUDES = -I. -IN32_SDK -ICMSIS/Core/Include
+INCLUDES = -I. -Iinc -IN32_SDK -ICMSIS/Core/Include -Idrivers/inc -IN32G031_StdPeriph_Driver/inc
 
 ######################################
 # Flags
