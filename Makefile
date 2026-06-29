@@ -14,11 +14,11 @@ OUTDIR = build
 # Source Files
 SRCS = src/main.c \
        startup/startup_n32g031_gcc.s \
-       system_n32g031.c \
-       n32g031_rcc.c \
-       n32g031_usart.c \
-       n32g031_gpio.c \
-       n32g031_adc.c
+       src/system_n32g031.c \
+       drivers/src/n32g031_rcc.c \
+       drivers/src/n32g031_usart.c \
+       drivers/src/n32g031_gpio.c \
+       drivers/src/n32g031_adc.c
 
 # Include Paths (Update these to match your folder structure)
 INCLUDES = -I. -Iinc -IN32_SDK -ICMSIS/Core/Include -Idrivers/inc -IN32G031_StdPeriph_Driver/inc
@@ -59,11 +59,13 @@ $(OUTDIR)/$(TARGET).elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS) -o $@
 
 # Rule for C files
-$(OUTDIR)/%.o: %.c | $(OUTDIR)
+$(OUTDIR)/%.o: %.c
+	@if not exist "$(dir $@)" mkdir "$(dir $@)"
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Rule for Assembly files
-$(OUTDIR)/%.o: %.s | $(OUTDIR)
+$(OUTDIR)/%.o: %.s
+	@if not exist "$(dir $@)" mkdir "$(dir $@)"
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OUTDIR):
