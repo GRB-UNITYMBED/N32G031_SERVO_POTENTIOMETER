@@ -1,14 +1,15 @@
 # N32G031 — Real-Time Servo Control via Potentiometer
 
+![servo](doc/images/Servo_Potentiometer_100k.png)
+
 An interactive automation project designed to teach analog signal reading and hardware mapping using the **Nations N32G031** (Cortex-M0). This project highlights how to control a servo motor's position in real-time by reading a potentiometer (knob) via the internal ADC (Analog-to-Digital Converter).
 
 This project is fully optimized for cross-platform workflows. No complex vendor IDEs or OS-specific setups are required. Open it directly in our IDE, plug in your board, and flash instantly.
 
-![servo](doc/images/Servo_Potentiometer_100k.png)
 
 ---
 
-## Hardware
+## Wiring
 
 | Device | Pin | N32G031 | Notes |
 | :--- | :--- | :--- | :--- |
