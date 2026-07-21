@@ -1,68 +1,95 @@
-TARGET = firmware
-BUILD_DIR = build
+######################################
+# Toolchain Setup
+######################################
+CC      = arm-none-eabi-gcc
+OBJCOPY = arm-none-eabi-objcopy
+SIZE    = arm-none-eabi-size
 
-# Source files
-C_SOURCES = \
-src/main.c \
-src/n32g031_it.c \
-src/servo.c \
-src/system_n32g031.c \
-src/utils.c \
-$(wildcard drivers/src/*.c)
+######################################
+# Project Files
+######################################
+TARGET = My_Project
+OUTDIR = build
 
-ASM_SOURCES = \
-startup/startup_n32g031_gcc.s
+# Source Files
+SRCS = src/main.c \
+       startup/startup_n32g031_gcc.s \
+       src/system_n32g031.c \
+       drivers/src/n32g031_rcc.c \
+       drivers/src/n32g031_usart.c \
+       drivers/src/n32g031_gpio.c \
+       drivers/src/n32g031_adc.c
 
-# Toolchain
-PREFIX = arm-none-eabi-
-CC = $(PREFIX)gcc
-AS = $(PREFIX)gcc -x assembler-with-cpp
-CP = $(PREFIX)objcopy
-SZ = $(PREFIX)size
+# Include Paths (Update these to match your folder structure)
+INCLUDES = -I. -Iinc -IN32_SDK -ICMSIS/Core/Include -Idrivers/inc -IN32G031_StdPeriph_Driver/inc
 
-# MCU flags for N32G031 (Cortex-M0)
+######################################
+# Flags
+######################################
+# MCU Specific Flags
 MCU = -mcpu=cortex-m0 -mthumb
 
-# Includes
-C_INCLUDES = \
--Iinc \
--Idrivers/inc
+# Compiler Flags
+CFLAGS = $(MCU) -O0 -g -Wall $(INCLUDES) \
+         -ffunction-sections -fdata-sections
 
-# Compile flags
-CFLAGS = $(MCU) -O2 -g -Wall -fdata-sections -ffunction-sections $(C_INCLUDES)
-ASFLAGS = $(MCU) -O2 -g -Wall -fdata-sections -ffunction-sections
-
-# Linker flags
+# Linker Flags
 LDSCRIPT = n32g031_flash.ld
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LDFLAGS = $(MCU) -T$(LDSCRIPT) \
+          -Wl,--gc-sections \
+          --specs=nosys.specs \
+          -Wl,-Map=$(OUTDIR)/$(TARGET).map
 
-# Object files (preserving directory structure in build folder)
-OBJECTS = $(addprefix $(BUILD_DIR)/,$(C_SOURCES:.c=.o))
-OBJECTS += $(addprefix $(BUILD_DIR)/,$(ASM_SOURCES:.s=.o))
+######################################
+# Build Rules
+######################################
 
-# Default target
-all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
+# Convert source list to object list in build directory
+OBJS = $(addprefix $(OUTDIR)/, $(addsuffix .o, $(basename $(SRCS))))
 
-# Build rules
-$(BUILD_DIR)/%.o: %.c
-	@mkdir -p $(@D)
-	$(CC) -c $(CFLAGS) $< -o $@
+all: $(OUTDIR)/$(TARGET).hex
 
-$(BUILD_DIR)/%.o: %.s
-	@mkdir -p $(@D)
-	$(AS) -c $(ASFLAGS) $< -o $@
+# Rule to create Hex from Elf
+$(OUTDIR)/$(TARGET).hex: $(OUTDIR)/$(TARGET).elf
+	$(OBJCOPY) -O ihex $< $@
+	$(SIZE) $<
 
-$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS)
-	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
-	$(SZ) $@
+# Rule to Link Elf
+$(OUTDIR)/$(TARGET).elf: $(OBJS)
+	$(CC) $(OBJS) $(LDFLAGS) -o $@
 
-$(BUILD_DIR)/%.hex: $(BUILD_DIR)/$(TARGET).elf
-	$(CP) -O ihex $< $@
+# Rule for C files
+$(OUTDIR)/%.o: %.c
+	@if not exist "$(dir $@)" mkdir "$(dir $@)"
+	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/%.bin: $(BUILD_DIR)/$(TARGET).elf
-	$(CP) -O binary -S $< $@
+# Rule for Assembly files
+$(OUTDIR)/%.o: %.s
+	@if not exist "$(dir $@)" mkdir "$(dir $@)"
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OUTDIR):
+	mkdir -p $(OUTDIR)
+
+######################################
+# Flash and Debug
+######################################
+OPENOCD_BIN = /C/openocd-v0.12/bin/openocd.exe
+
+flash: all
+	$(OPENOCD_BIN) \
+	-f interface/cmsis-dap.cfg \
+	-f target/n32g03x.cfg \
+	-c "adapter speed 1000" \
+	-c "reset_config none" \
+	-c "init" \
+	-c "halt" \
+	-c "flash write_image erase $(OUTDIR)/$(TARGET).elf" \
+	-c "verify_image $(OUTDIR)/$(TARGET).elf" \
+	-c "reset run" \
+	-c "exit"
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(OUTDIR)
 
-.PHONY: all clean
+.PHONY: all clean flash
