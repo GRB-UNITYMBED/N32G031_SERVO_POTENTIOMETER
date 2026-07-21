@@ -4,8 +4,8 @@ BUILD_DIR = build
 # Source files
 C_SOURCES = \
 src/main.c \
-src/misc.c \
 src/n32g031_it.c \
+src/servo.c \
 src/system_n32g031.c \
 src/utils.c \
 $(wildcard drivers/src/*.c)
@@ -34,7 +34,7 @@ ASFLAGS = $(MCU) -O2 -g -Wall -fdata-sections -ffunction-sections
 
 # Linker flags
 LDSCRIPT = n32g031_flash.ld
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections -Wl,--no-warn-rwx-segments
+LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # Object files (preserving directory structure in build folder)
 OBJECTS = $(addprefix $(BUILD_DIR)/,$(C_SOURCES:.c=.o))
