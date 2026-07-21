@@ -60,12 +60,12 @@ $(OUTDIR)/$(TARGET).elf: $(OBJS)
 
 # Rule for C files
 $(OUTDIR)/%.o: %.c
-	@if not exist "$(dir $@)" mkdir "$(dir $@)"
+	@mkdir -p "$(dir $@)"
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Rule for Assembly files
 $(OUTDIR)/%.o: %.s
-	@if not exist "$(dir $@)" mkdir "$(dir $@)"
+	@mkdir -p "$(dir $@)"
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OUTDIR):
