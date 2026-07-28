@@ -12,13 +12,9 @@ TARGET = My_Project
 OUTDIR = build
 
 # Source Files
-SRCS = src/main.c \
-       startup/startup_n32g031_gcc.s \
-       src/system_n32g031.c \
-       drivers/src/n32g031_rcc.c \
-       drivers/src/n32g031_usart.c \
-       drivers/src/n32g031_gpio.c \
-       drivers/src/n32g031_adc.c
+SRCS  = $(wildcard src/*.c) \
+        $(wildcard drivers/src/*.c) \
+        startup/startup_n32g031_gcc.s
 
 # Include Paths (Update these to match your folder structure)
 INCLUDES = -I. -Iinc -IN32_SDK -ICMSIS/Core/Include -Idrivers/inc -IN32G031_StdPeriph_Driver/inc
